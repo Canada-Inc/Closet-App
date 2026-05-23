@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D AI Studio Closet</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Load Three.js 3D Graphics Engine and GLTF Model Loader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+
+    <!-- AUTHENTICATION LAYER -->
+    <div id="authOverlay" class="auth-modal">
+        <div class="auth-box">
+            <h2>Closet Studio Login</h2>
+            <input type="email" id="authEmail" placeholder="Your Email Address">
+            <input type="password" id="authPassword" placeholder="Your Password">
+            <div class="auth-buttons">
+                <button onclick="handleAuth('login')">Sign In</button>
+                <button onclick="handleAuth('register')" class="secondary-btn">Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP STUDIO -->
+    <header>
+        <div class="user-bar">
+            <span id="userGreeting">Loading Session...</span>
+            <button onclick="logout()" class="logout-btn">Log Out</button>
+        </div>
+        <h1>3D AI OUTFIT DESIGNER</h1>
+    </header>
+
+    <div class="app-container">
+        
+        <!-- CONTROL CONSOLE -->
+        <section class="control-panel">
+            <h2>1. AI 3D Garment Generator</h2>
+            <div class="upload-wrapper">
+                <p class="step-guide">Take a photo of your clothes. Our backend pipeline converts it into a textured 3D .GLTF mesh asset file framework using neural reconstructions.</p>
+                <input type="file" id="imageInput" accept="image/*">
+                <select id="itemCategory">
+                    <option value="hat">Headwear</option>
+                    <option value="torso">Torso / Upper Layer</option>
+                    <option value="legs">Legwear / Bottoms</option>
+                    <option value="feet">Footwear</option>
+                </select>
+                <button onclick="triggerAI3DGeneration()" id="genBtn">Generate 3D Garment</button>
+            </div>
+
+            <hr>
+
+            <h2>2. Avatar Customizer</h2>
+            <div class="customizer-controls">
+                <label>Avatar Height Scale:</label>
+                <input type="range" id="avatarHeight" min="0.8" max="1.2" step="0.05" value="1" oninput="adjustAvatarDimension()">
+                
+                <label>Avatar Torso Width:</label>
+                <input type="range" id="avatarWidth" min="0.8" max="1.2" step="0.05" value="1" oninput="adjustAvatarDimension()">
+            </div>
+        </section>
+
+        <!-- LIVE 3D VIEWPORT -->
+        <section class="viewport-panel">
+            <h2>3D Virtual Dressing Room</h2>
+            <!-- The 3D world loads directly inside this division shell -->
+            <div id="canvas3dContainer"></div>
+            <div class="deck-selectors">
+                <button onclick="cycle3DAsset('hat')">Next Headwear</button>
+                <button onclick="cycle3DAsset('torso')">Next Upper Layer</button>
+                <button onclick="cycle3DAsset('legs')">Next Bottoms</button>
+                <button onclick="cycle3DAsset('feet')">Next Footwear</button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Inject Firebase Core SDK Modules safely via web scripts CDN modules -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
