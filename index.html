@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CLOS3T - Spatial Style Studio</title>
+    
+    <!-- PWA iOS Web App Meta Compliance Capabilities -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CLOS3T">
+
+    <!-- Production Dependencies: Synchronized Three.js r128 Ecosystem & Firebase Storage Platforms -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* 2026 FUTURISTIC GLASSMORPHIC DESIGN SYSTEM */
+        :root {
+            --bg-main: #09090b;
+            --bg-card: rgba(22, 22, 26, 0.75);
+            --accent-neon: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --border-glass: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* SECURITY CONSOLE LOCK VIEWPORT OVERLAY */
+        .auth-gatekeeper {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #18181b 0%, #09090b 100%);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .studio-logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-neon);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .primary-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent-neon);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            transition: transform 0.1s ease;
+        }
+
+        .primary-btn:active { transform: scale(0.98); }
+        .alt-btn { background: transparent; border: 1px solid var(--border-glass); margin-top: 8px; color: var(--text-secondary); }
+
+        /* STUDIO RUNTIME DESKTOP INTERFACES STYLE */
+        .workspace-shell {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .studio-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(9, 9, 11, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .user-tag { font-weight: 500; font-size: 0.9rem; color: var(--text-secondary); }
+
+        /* 3D VIEWPORT STAGING HUBS */
+        .view-3d-viewport {
+            flex: 1;
+            position: relative;
+            background: #0c0c0e;
+        }
+
+        #canvas3dContainer { width: 100%; height: 100%; }
+
+        /* FIXED FLOATING OVERLAY PANELS */
+        .floating-dock {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 420px;
+            background: rgba(18, 18, 22, 0.8);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            box-sizing: border-box;
+        }
+
+        .dock-row { display: flex; gap: 8px; margin-top: 10px; }
+
+        .uploader-zone input[type="file"] { display: none; }
+        .uploader-zone label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px dashed var(--border-glass);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--accent-neon);
+        }
+
+        .selector-chip {
+            flex: 1;
+            padding: 12px 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .selector-chip:active { background: var(--accent-neon); }
+
+        .system-ticker-box {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+
+        .loader-spinner {
+            position: absolute;
+            inset: 0;
+            background: rgba(9,9,11,0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .pulse-ring {
+            width: 40px; height: 40px;
+            border: 3px solid var(--border-glass);
+            border-top-color: var(--accent-neon);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- SECURITY CONSOLE WALL WINDOWS -->
+    <div id="authOverlay" class="auth-gatekeeper">
+        <div class="glass-card">
+            <div class="studio-logo">CLOS3T</div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top:0; margin-bottom:24px;">Spatial AI Styling Studio</p>
+            <input type="email" id="authEmail" class="input-field" placeholder="Email Address">
+            <input type="password" id="authPassword" class="input-field" placeholder="Security Password">
+            <button onclick="executeAuthAction('login')" class="primary-btn">Open Studio Space</button>
+            <button onclick="executeAuthAction('register')" class="primary-btn alt-btn">Register New Account</button>
+            <button onclick="bypassToSandbox()" class="primary-btn alt-btn" style="border-color: #3f3f46;">Preview Design Sandbox</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP FLOW VIEWPORT SHELLS -->
+    <div class="workspace-shell">
+        <nav class="studio-navbar">
+            <span style="font-weight:800; letter-spacing:-0.5px; font-size:1.2rem;">CLOS3T</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span id="userGreeting" class="user-tag">Syncing...</span>
+                <span onclick="triggerExitSession()" style="cursor:pointer; font-size:0.8rem; color:#ef4444; font-weight:600;">Disconnect</span>
+            </div>
+        </nav>
+
+        <div class="view-3d-viewport">
+            <div id="systemNotification" class="system-ticker-box">AI CONTEXT MODEL: SYNCED</div>
+            <div id="canvas3dContainer"></div>
+            
+            <!-- SPATIAL RENDERING LOADING INDICATION BLOCK -->
+            <div id="uiLoader" class="loader-spinner">
+                <div class="pulse-ring"></div>
+                <span id="loaderMessage">Reconstructing Spatial Geometry...</span>
+            </div>
+
+            <!-- FLOATING NAVIGATION APP STEERING HOUSING MODULE -->
+            <div class="floating-dock">
+                <div class="uploader-zone">
+                    <label for="imageInput">✦ CAPTURE GARMENT TO SPATIAL AI</label>
+                    <input type="file" id="imageInput" accept="image/*" onchange="processGarmentIngestion()">
+                </div>
+                
+                <div class="dock-row">
+                    <select id="itemCategory" class="input-field" style="margin:0; width:40%; padding:10px; font-size:0.8rem; border-radius:12px;">
+                        <option value="hat">Headwear</option>
+                        <option value="torso">Upper Layer</option>
+                        <option value="legs">Bottoms</option>
+                    </select>
+                    <button class="selector-chip" onclick="rotateSpatialAsset('hat')">Hat ↻</button>
+                    <button class="selector-chip" onclick="rotateSpatialAsset('torso')">Top ↻</button>
+                    <button class="selector-chip" onclick="rotateSpatialAsset('legs')">Legs ↻</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SYSTEM CORE BACKEND LOGIC PROCESSING MECHANICS ENGINE -->
+    <script>
+        // ========================================================
+        // 1. SECURE APPLICATION DATABASES INTERFACE INITIALIZATION
+        // ========================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyACAhIxxUNej5lH73ilr0L2AGhvAbtGQxw",
+            authDomain: "closetapp-4e847.firebaseapp.com",
+            projectId: "closetapp-4e847",
+            storageBucket: "closetapp-4e847.firebasestorage.app",
+            messagingSenderId: "305769653826",
+            appId: "1:305769653826:web:51858641eee0a71aafefdb"
+        };
+
+        // EXCLUSIVE ACCESS FILTER: Write your two exact email addresses inside these boxes
+        const PRIVACY_VIP_LIST = [
+            "your-email@example.com", 
+            "your-girlfriends-email@example.com"
+        ];
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let activeSessionUser = null;
+        let personalClosetMap = { hat: [], torso: [], legs: [] };
+        let assetIndices = { hat: 0, torso: 0, legs: 0 };
+
+        // 3D Rendering Engine Component Instances
+        let sceneContext, lensCamera, canvasRenderer, virtualMannequinGroup;
+        let activeStageMeshes = { hat: null, torso: null, legs: null };
+
+        // Listen for user account profile state switching signatures
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const emailCheck = user.email.trim().toLowerCase();
+                if (!PRIVACY_VIP_LIST.includes(emailCheck)) {
+                    alert("Unauthorized entry footprint recognized. Severing connection.");
+                    auth.signOut();
+                    return;
+                }
+                
+                activeSessionUser = user;
+                document.getElementById('authOverlay').style.opacity = '0';
+                setTimeout(() => document.getElementById('authOverlay').style.display = 'none', 500);
+                document.getElementById('userGreeting').innerText = user.email.split('@')[0].toUpperCase();
+                
+                initSpatial3DEngine();
+                synchronizeCloudClosetStorage();
+            } else {
+                activeSessionUser = null;
+                document.getElementById('authOverlay').style.display = 'flex';
+                document.getElementById('authOverlay').style.opacity = '1';
+            }
+        });
+
+        function executeAuthAction(mode) {
+            const emailInput = document.getElementById('authEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('authPassword').value;
+            
+            if (!emailInput || !pass) return alert("Enter authentication credentials.");
+
+            if (!PRIVACY_VIP_LIST.includes(emailInput)) {
+                alert("Access Denied: This design environment is strictly private.");
+                return;
+            }
+
+            if (mode === 'register') {
+                auth.createUserWithEmailAndPassword(emailInput, pass).then(cred => {
+                    return db.collection('vault_closets').doc(cred.user.uid).set({
+                        hat: ["https://modelviewer.dev/shared-assets/models/Astronaut.glb"],
+                        torso: [], legs: []
+                    });
+                }).catch(err => alert(err.message));
+            } else {
+                auth.signInWithEmailAndPassword(emailInput, pass).catch(err => alert(err.message));
+            }
+        }
+
+        function bypassToSandbox() {
+            document.getElementById('authOverlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('authOverlay').style.display = 'none', 500);
+            document.getElementById('userGreeting').innerText = "PREVIEW SANDBOX";
+            document.getElementById('systemNotification').innerText = "SANDBOX CONSOLE ACTIVE";
+            initSpatial3DEngine();
+            personalClosetMap = {
+                hat: ["https://modelviewer.dev/shared-assets/models/Astronaut.glb"],
+                torso: [], legs: []
+            };
+            mountSpatialModelToMannequin('hat');
+        }
+
+        function triggerExitSession() { auth.signOut().then(() => window.location.reload()); }
+
+        // ========================================================
+        // 2. SPATIAL GRAPHICS RENDERING SYSTEM (Three.js WebGL2)
+        // ========================================================
+        function initSpatial3DEngine() {
+            const viewport = document.getElementById('canvas3dContainer');
+            if (sceneContext) return;
+
+            sceneContext = new THREE.Scene();
+            
+            lensCamera = new THREE.PerspectiveCamera(50, viewport.clientWidth / viewport.clientHeight, 0.1, 100);
+            lensCamera.position.set(0, 1.3, 2.5);
+
+            canvasRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            canvasRenderer.setSize(viewport.clientWidth, viewport.clientHeight);
+            canvasRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            canvasRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+            viewport.appendChild(canvasRenderer.domElement);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            sceneContext.add(ambient);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            keyLight.position.set(2, 4, 5);
+            sceneContext.add(keyLight);
+
+            virtualMannequinGroup = new THREE.Group();
+            const mannequinMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1f1f23,
+                roughness: 0.4,
+                metalness: 0.2
+            });
+
+            const bodyColumn = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.12, 0.7, 32), mannequinMaterial);
+            bodyColumn.position.y = 0.95;
+            const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.11, 32, 32), mannequinMaterial);
+            headSphere.position.y = 1.42;
+
+            virtualMannequinGroup.add(bodyColumn);
+            virtualMannequinGroup.add(headSphere);
+            sceneContext.add(virtualMannequinGroup);
+
+            function renderTick() {
+                requestAnimationFrame(renderTick);
+                if (virtualMannequinGroup) {
+                    virtualMannequinGroup.rotation.y += 0.006;
+                }
+                canvasRenderer.render(sceneContext, lensCamera);
+            }
+            renderTick();
+
+            window.addEventListener('resize', () => {
+                lensCamera.aspect = viewport.clientWidth / viewport.clientHeight;
+                lensCamera.updateProjectionMatrix();
+                canvasRenderer.setSize(viewport.clientWidth, viewport.clientHeight);
+            });
+        }
+
+        // ========================================================
+        // 3. GAUSSIAN SPLATTING / TEXTURE AI PIPELINE MODEL HOOK
+        // ========================================================
+        function processGarmentIngestion() {
+            const fileBox = document.getElementById('imageInput');
+            const targetCategory = document.getElementById('itemCategory').value;
+            const loader = document.getElementById('uiLoader');
+            
+            if (!fileBox.files[0]) return alert("Please capture or choose an image file framework first.");
+
+            loader.style.display = 'flex';
+            document.getElementById('loaderMessage').innerText = "AI Compiling Spatial Splat Mesh...";
+
+            setTimeout(() => {
+                let syntheticMockGLTFUrl = "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
+                
+                if (activeSessionUser) {
+                    db.collection('vault_closets').doc(activeSessionUser.uid).update({
+                        [targetCategory]: firebase.firestore.FieldValue.arrayUnion(syntheticMockGLTFUrl)
+                    }).then(() => {
+                        loader.style.display = 'none';
+                        document.getElementById('systemNotification').innerText = `AI STATUS: INSTANT SPLAT REGISTERED FOR ${targetCategory.toUpperCase()}`;
+                        
+                        if(!personalClosetMap[targetCategory]) personalClosetMap[targetCategory] = [];
+                        personalClosetMap[targetCategory].push(syntheticMockGLTFUrl);
+                        assetIndices[targetCategory] = personalClosetMap[targetCategory].length - 1;
+                        
+                        mountSpatialModelToMannequin(targetCategory);
+                    }).catch(err => {
+                        loader.style.display = 'none';
+                        alert("Database write error: " + err.message);
+                    });
+                } else {
+                    loader.style.display = 'none';
+                    document.getElementById('systemNotification').innerText = `SANDBOX AI CAPTURE RUN COMPLETE`;
+                    if(!personalClosetMap[targetCategory]) personalClosetMap[targetCategory] = [];
+                    personalClosetMap[targetCategory].push(syntheticMockGLTFUrl);
+                    assetIndices[targetCategory] = personalClosetMap[targetCategory].length - 1;
+                    mountSpatialModelToMannequin(targetCategory);
+                }
+            }, 1500); 
+        }
+
+        function synchronizeCloudClosetStorage() {
+            if (!activeSessionUser) return;
+            db.collection('vault_closets').doc(activeSessionUser.uid).get().then(doc => {
+                if (doc.exists()) {
+                    personalClosetMap = doc.data();
+                    mountSpatialModelToMannequin('hat');
+                }
+            });
+        }
+
+        function rotateSpatialAsset(category) {
+            const itemsList = personalClosetMap[category] || [];
+            if (itemsList.length === 0) return alert("No 3D components registered to this category segment.");
+
+            assetIndices[category] = (assetIndices[category] + 1) % itemsList.length;
+            mountSpatialModelToMannequin(category);
+        }
+
+        function mountSpatialModelToMannequin(category) {
+            const directTargetSourceUrl = personalClosetMap[category]?.[assetIndices[category]];
+            if (!directTargetSourceUrl) return;
+
+            if (activeStageMeshes[category]) {
+                virtualMannequinGroup.remove(activeStageMeshes[category]);
+            }
+
+            const modelLoader = new THREE.GLTFLoader();
+            modelLoader.load(directTargetSourceUrl, (gltf) => {
+                const loadedMeshGeometry = gltf.scene;
+                
+                loadedMeshGeometry.scale.set(0.38, 0.38, 0.38);
+                if (category === 'hat') loadedMeshGeometry.position.set(0, 1.48, 0);
+                if (category === 'torso') loadedMeshGeometry.position.set(0, 0.95, 0);
+
+                activeStageMeshes[category] = loadedMeshGeometry;
+                virtualMannequinGroup.add(loadedMeshGeometry);
+            }, undefined, (error) => console.error("Asset tracking pipeline error:", error));
+        }
+    </script>
+</body>
+</html>
