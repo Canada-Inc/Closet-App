@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Virtual Closet</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>VIRTUAL CLOSET</h1>
+        <p>Your Digital Wardrobe Studio</p>
+    </header>
+    <div class="app-container">
+        <section class="upload-section">
+            <h2>+ Add to Closet</h2>
+            <input type="file" id="imageLoader" accept="image/*">
+            <select id="categorySelect">
+                <option value="tops">Tops / Jackets</option>
+                <option value="bottoms">Bottoms / Skirts / Pants</option>
+                <option value="shoes">Shoes</option>
+            </select>
+            <button onclick="uploadItem()">Upload Item</button>
+        </section>
+
+        <section class="mixer-section">
+            <h2>Virtual Dressing Room</h2>
+            <div class="carousel">
+                <div class="carousel-item">
+                    <button onclick="prev('tops')">◀</button>
+                    <div class="img-frame"><img id="currentTop" src="https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=300" alt="Top"></div>
+                    <button onclick="next('tops')">▶</button>
+                </div>
+                <div class="carousel-item">
+                    <button onclick="prev('bottoms')">◀</button>
+                    <div class="img-frame"><img id="currentBottom" src="https://images.unsplash.com/photo-1582142306909-195724d33ffc?w=300" alt="Bottom"></div>
+                    <button onclick="next('bottoms')">▶</button>
+                </div>
+                <div class="carousel-item">
+                    <button onclick="prev('shoes')">◀</button>
+                    <div class="img-frame"><img id="currentShoes" src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=300" alt="Shoes"></div>
+                    <button onclick="next('shoes')">▶</button>
+                </div>
+            </div>
+            <button class="log-outfit-btn" onclick="logOutfit()">Wear This Outfit</button>
+        </section>
+
+        <section class="ai-section">
+            <h2>AI Style Generator</h2>
+            <select id="weatherInput" onchange="generateRecommendation()">
+                <option value="sunny">Sunny & Warm</option>
+                <option value="rainy">Rainy & Cold</option>
+            </select>
+            <div id="aiSuggestion" class="suggestion-box">Select weather to see style match!</div>
+        </section>
+
+        <section class="closet-inventory">
+            <h2>Your Wardrobe Inventory</h2>
+            <div class="grid-container" id="inventoryGrid"></div>
+        </section>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
