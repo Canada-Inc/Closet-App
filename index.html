@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CLOS3T - Luxury Style Studio</title>
+    
+    <!-- PWA Smart-App Capabilities -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CLOS3T">
+
+    <!-- Core Graphics Engine & Live Firebase Ecosystem Components -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* 2026 LUXURY MINIMALIST DESIGN SYSTEM */
+        :root {
+            --bg-main: #f8f9fa;       /* Clean gallery off-white */
+            --bg-card: #ffffff;       /* Pure white crisp panels */
+            --brand-dark: #0f172a;     /* Deep charcoal typography */
+            --text-muted: #64748b;     /* Elegant slate gray for labels */
+            --border-subtle: #e2e8f0;  /* Razor-thin soft dividing lines */
+            --radius-pill: 9999px;     /* Smooth pill buttons */
+            --radius-card: 20px;       /* Modern rounded panels */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background-color: var(--bg-main);
+            color: var(--brand-dark);
+            margin: 0;
+            padding: 16px;
+            box-sizing: border-box;
+            height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* LIGHTWEIGHT MODAL LOGIN SYSTEM */
+        .auth-gatekeeper {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .studio-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-card);
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .studio-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            color: var(--brand-dark);
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px;
+            background: #f1f5f9;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            color: var(--brand-dark);
+            font-family: inherit;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: var(--brand-dark);
+        }
+
+        .primary-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--brand-dark);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-pill);
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        .primary-btn:active { transform: scale(0.98); }
+
+        .workspace-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 100%;
+            overflow-y: scroll;
+            padding-bottom: 40px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* REFINED BRAND NAVIGATION HEADER */
+        .studio-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-radius: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .navbar-brand { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; }
+
+        /* STUDIO DRESSING ROOM HUB */
+        .viewport-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-card);
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            touch-action: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        #canvas3dContainer { width: 100%; height: 100%; cursor: grab; }
+        #canvas3dContainer:active { cursor: grabbing; }
+
+        /* CONTROLS HUB PANEL */
+        .control-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-card);
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .dock-row { display: flex; gap: 12px; margin-top: 16px; }
+
+        .uploader-zone label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            background: #f1f5f9;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background 0.2s ease;
+        }
+        .uploader-zone label:hover { background: #e2e8f0; }
+        .uploader-zone input[type="file"] { display: none; }
+
+        .selector-chip {
+            flex: 1;
+            padding: 14px 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-pill);
+            color: var(--brand-dark);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .selector-chip:active {
+            background: var(--brand-dark);
+            color: #ffffff;
+            border-color: var(--brand-dark);
+        }
+
+        .system-ticker-box {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.08);
+            padding: 6px 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: var(--radius-pill);
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            z-index: 10;
+            color: #475569;
+        }
+
+        /* BOUTIQUE CLOSET REPOSITORY ARCHIVE */
+        .vault-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-card);
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
+
+        .vault-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .vault-card {
+            border-radius: 12px;
+            background: var(--bg-main);
+            padding: 8px;
+            text-align: center;
+            position: relative;
+            border: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        .vault-card img {
+            width: 100%;
+            height: 85px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .vault-card span {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .owner-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--brand-dark);
+            color: #ffffff;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .loader-spinner {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .pulse-ring {
+            width: 32px; height: 32px;
+            border: 3px solid #e2e8f0;
+            border-top-color: var(--brand-dark);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- SECURE APPLICATION GATEKEEPER OVERLAY -->
+    <div id="authOverlay" class="auth-gatekeeper">
+        <div class="studio-card">
+            <h2 class="studio-logo">CLOS3T</h2>
+            <p style="font-size: 0.85rem; font-weight: 500; margin-bottom: 24px; color: var(--text-muted);">Luxury Virtual Dressing Room Ecosystem</p>
+            
+            <input type="email" id="authEmail" class="input-field" placeholder="Email Address">
+            <input type="password" id="authPassword" class="input-field" placeholder="Password">
+            
+            <button onclick="executeAuthAction('login')" class="primary-btn">Sign In to Workspace</button>
+            <button onclick="executeAuthAction('register')" class="primary-btn" style="background:#f1f5f9; color: var(--brand-dark);">Register New Space</button>
+            <button onclick="bypassToSandbox()" class="primary-btn" style="background:transparent; color: var(--text-muted); font-size:0.75rem;">Enter Offline Studio Sandbox</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP INTERFACE DASHBOARD SHELL -->
+    <div class="workspace-shell">
+        <nav class="studio-navbar">
+            <span class="navbar-brand">CLOS3T</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span id="userGreeting" style="font-weight:700; font-size:0.75rem; letter-spacing: 0.5px; color: var(--text-muted);">SYNCING...</span>
+                <span onclick="triggerExitSession()" style="cursor:pointer; font-size:0.75rem; color:#ef4444; font-weight:700; border: 1px solid #fca5a5; border-radius: var(--radius-pill); padding: 4px 10px; background:#fef2f2;">Exit</span>
+            </div>
+        </nav>
+
+        <!-- 3D VIEWPORT CANVAS HUD DISPLAY -->
+        <div class="viewport-panel">
+            <div id="systemNotification" class="system-ticker-box">DRAG TO INSPECT OUTFIT CONTROLS</div>
+            <div id="canvas3dContainer"></div>
+            
+            <div id="uiLoader" class="loader-spinner">
+                <div class="pulse-ring"></div>
+                <span id="loaderMessage">PROFILING RECONSTRUCTION CORRELATIONS...</span>
+            </div>
+        </div>
+
+        <!-- CAMERA INTERFACE EXTRACTION PLATFORM PANEL -->
+        <div class="control-panel" id="uploadConsoleControl">
+            <div class="uploader-zone">
+                <label for="imageInput">✦ CAPTURE DESIGN PIECE ON HANGER ✦</label>
+                <input type="file" id="imageInput" accept="image/*" onchange="processGarmentIngestion()">
+            </div>
+            
+            <div class="dock-row">
+                <select id="itemCategory" class="input-field" style="margin:0; width:45%; height:46px; border:1px solid var(--border-subtle); border-radius: var(--radius-pill); padding-left: 14px;">
+                    <option value="hat">Headwear</option>
+                    <option value="torso">Upper Layer</option>
+                    <option value="legs">Bottoms</option>
+                </select>
+                <button class="selector-chip" onclick="rotateSpatialAsset('hat')">Hat ↻</button>
+                <button class="selector-chip" onclick="rotateSpatialAsset('torso')">Top ↻</button>
+                <button class="selector-chip" onclick="rotateSpatialAsset('legs')">Legs ↻</button>
+            </div>
+        </div>
+
+        <!-- REFINED STUDIO ARCHIVE VAULT GRID -->
+        <div class="vault-panel">
+            <h3 style="margin:0; font-size:0.95rem; font-weight:700; letter-spacing:-0.2px;" id="vaultTitle">📸 WARDROBE DECK</h3>
+            <div class="vault-grid" id="vaultGridDisplay"></div>
+        </div>
+    </div>
+
+    <!-- RUNTIME DATA INTERACTIVE MECHANICS SCRIPTS -->
+    <script>
+        // ========================================================
+        // 1. DATABASE CONNECTIVITY LAYER CONFIGURATIONS
+        // ========================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyACAhIxxUNej5lH73ilr0L2AGhvAbtGQxw",
+            authDomain: "closetapp-4e847.firebaseapp.com",
+            projectId: "closetapp-4e847",
+            storageBucket: "closetapp-4e847.firebasestorage.app",
+            messagingSenderId: "305769653826",
+            appId: "1:305769653826:web:51858641eee0a71aafefdb"
+        };
+
+        const PRIVACY_VIP_LIST = [
+            "hunter.folk8@gmail.com", 
+            "your-girlfriends-email@example.com",
+            "admin@clos3t.com"
+        ];
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let activeSessionUser = null;
+        let personalClosetMap = { hat: [], torso: [], legs: [] };
+        let photoVaultMap = { hat: [], torso: [], legs: [] };
+        let assetIndices = { hat: 0, torso: 0, legs: 0 };
+
+        let sceneContext, lensCamera, canvasRenderer, virtualMannequinGroup;
+        let activeStageMeshes = { hat: null, torso: null, legs: null };
+
+        let isDraggingInputPointer = false;
+        let previousPointerPositionX = 0;
+
+        const softwareTextureLoader = new THREE.TextureLoader();
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const emailCheck = user.email.trim().toLowerCase();
+                if (!PRIVACY_VIP_LIST.includes(emailCheck)) {
+                    alert("Unauthorized account configuration access loop terminated.");
+                    auth.signOut();
+                    return;
+                }
+                
+                activeSessionUser = user;
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('userGreeting').innerText = user.email.split('@')[0].toUpperCase();
+                
+                if(emailCheck === "admin@clos3t.com") {
+                    document.getElementById('studioTitle').innerText = "GLOBAL MANAGEMENT CONSOLE";
+                    document.getElementById('vaultTitle').innerText = "📸 INTEGRATED BOUTIQUE STORAGE DIRECTORY";
+                }
+
+                initSpatial3DEngine();
+                synchronizeCloudClosetStorage();
+            } else {
+                activeSessionUser = null;
+                document.getElementById('authOverlay').style.display = 'flex';
+                document.getElementById('userGreeting').innerText = "DISCONNECTED";
+            }
+        });
+
+        function executeAuthAction(mode) {
+            const emailInput = document.getElementById('authEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('authPassword').value;
+            
+            if (!emailInput || !pass) return alert("Please submit required authentication entries strings.");
+            if (!PRIVACY_VIP_LIST.includes(emailInput)) return alert("Access Restriction: Private digital studio pipeline.");
+
+            if (mode === 'register') {
+                auth.createUserWithEmailAndPassword(emailInput, pass).then(cred => {
+                    return db.collection('vault_closets').doc(cred.user.uid).set({
+                        email: emailInput,
+                        hat: ["#1e293b"], torso: ["#94a3b8"], legs: ["#cbd5e1"],
+                        hat_photos: ["https://images.unsplash.com/photo-1534215754734-18e55d13ce35?w=150"],
+                        torso_photos: ["https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=150"],
+                        legs_photos: ["https://images.unsplash.com/photo-1542272604-787c3835535d?w=150"]
+                    });
+                }).catch(err => alert(err.message));
+            } else {
+                auth.signInWithEmailAndPassword(emailInput, pass).catch(err => alert(err.message));
+            }
+        }
+
+        function bypassToSandbox() {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('userGreeting').innerText = "STUDIO_SANDBOX";
+            initSpatial3DEngine();
+            personalClosetMap = { hat: ["#1e293b"], torso: ["#475569"], legs: ["#94a3b8"] };
+            photoVaultMap = { 
+                hat: ["https://images.unsplash.com/photo-1534215754734-18e55d13ce35?w=150"], 
+                torso: ["https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=150"], 
+                legs: ["https://images.unsplash.com/photo-1542272604-787c3835535d?w=150"] 
+            };
+            renderVaultGridDisplay();
+            loadActiveWardrobeModelsToMannequin();
+        }
+
+        function triggerExitSession() { auth.signOut().then(() => window.location.reload()); }
+
+        // ========================================================
+        // 2. LUXURY SMART CEL-SHADED TOON GRAPHICS ENGINE
+        // ========================================================
+        function initSpatial3DEngine() {
+            const viewport = document.getElementById('canvas3dContainer');
+            if (sceneContext) return;
+
+            sceneContext = new THREE.Scene();
+            sceneContext.background = new THREE.Color(0xffffffff); // Premium high-key showroom studio glare
+
+            lensCamera = new THREE.PerspectiveCamera(38, viewport.clientWidth / viewport.clientHeight, 0.1, 100);
+            lensCamera.position.set(0, 0.85, 2.7);
+
+            canvasRenderer = new THREE.WebGLRenderer({ antialias: true });
+            canvasRenderer.setSize(viewport.clientWidth, viewport.clientHeight);
+            canvasRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            viewport.appendChild(canvasRenderer.domElement);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.98);
+            sceneContext.add(ambient);
+
+            const studioKeyLight = new THREE.DirectionalLight(0xffffff, 0.25);
+            studioKeyLight.position.set(1, 3, 2);
+            sceneContext.add(studioKeyLight);
+
+            // COMPILING MATTE BOUTIQUE AVATAR
+            virtualMannequinGroup = new THREE.Group();
+            
+            const boutiqueSkinMaterial = new THREE.MeshToonMaterial({ 
+                color: 0xf1f5f9, // Smooth soft slate character tone
+                roughness: 0.9
+            });
+
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.035, 0.08, 32), boutiqueSkinMaterial); neck.position.y = 1.08;
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.092, 32, 32), boutiqueSkinMaterial); head.position.y = 1.19;
+            const torsoChest = new THREE.Mesh(new THREE.CapsuleGeometry(0.092, 0.26, 32, 32), boutiqueSkinMaterial); torsoChest.position.y = 0.82; torsoChest.scale.set(1.28, 1.0, 1.0);
+
+            const leftArm = new THREE.Mesh(new THREE.CapsuleGeometry(0.022, 0.28, 16, 16), boutiqueSkinMaterial); leftArm.position.set(-0.155, 0.78, 0); leftArm.rotation.z = 0.12;
+            const rightArm = new THREE.Mesh(new THREE.CapsuleGeometry(0.022, 0.28, 16, 16), boutiqueSkinMaterial); rightArm.position.set(0.155, 0.78, 0); rightArm.rotation.z = -0.12;
+            
+            const leftLeg = new THREE.Mesh(new THREE.CapsuleGeometry(0.03, 0.42, 16, 16), boutiqueSkinMaterial); leftLeg.position.set(-0.045, 0.35, 0);
+            const rightLeg = new THREE.Mesh(new THREE.CapsuleGeometry(0.03, 0.42, 16, 16), boutiqueSkinMaterial); rightLeg.position.set(0.045, 0.35, 0);
+
+            virtualMannequinGroup.add(neck); virtualMannequinGroup.add(head); virtualMannequinGroup.add(torsoChest);
+            virtualMannequinGroup.add(leftArm); virtualMannequinGroup.add(rightArm); virtualMannequinGroup.add(leftLeg); virtualMannequinGroup.add(rightLeg);
+            sceneContext.add(virtualMannequinGroup);
+
+            function renderTick() { requestAnimationFrame(renderTick); canvasRenderer.render(sceneContext, lensCamera); }
+            renderTick();
+
+            // Refined drag-to-swipe handling parameters trackers
+            viewport.addEventListener('mousedown', (e) => { isDraggingInputPointer = true; previousPointerPositionX = e.clientX; });
+            viewport.addEventListener('touchstart', (e) => { isDraggingInputPointer = true; previousPointerPositionX = e.touches[0].clientX; }, {passive: true});
+            window.addEventListener('mousemove', (e) => {
+                if (!isDraggingInputPointer || !virtualMannequinGroup) return;
+                let deltaX = e.clientX - previousPointerPositionX;
+                virtualMannequinGroup.rotation.y += deltaX * 0.008; previousPointerPositionX = e.clientX;
+            });
+            window.addEventListener('touchmove', (e) => {
+                if (!isDraggingInputPointer || !virtualMannequinGroup) return;
+                let deltaX = e.touches[0].clientX - previousPointerPositionX;
+                virtualMannequinGroup.rotation.y += deltaX * 0.008; previousPointerPositionX = e.touches[0].clientX;
+            }, {passive: true});
+            window.addEventListener('mouseup', () => isDraggingInputPointer = false);
+            window.addEventListener('touchend', () => isDraggingInputPointer = false);
+        }
+
+        // ========================================================
+        // 3. CLOUD SYNC & MODERN FITTING SEPARATION LOOPS
+        // ========================================================
+        function processGarmentIngestion() {
+            if(auth.currentUser && auth.currentUser.email === "admin@clos3t.com") return alert("Monitoring console account layer mode reads data exclusively.");
+            
+            const fileBox = document.getElementById('imageInput');
+            const targetCategory = document.getElementById('itemCategory').value;
+            const loader = document.getElementById('uiLoader');
+            
+            if (!fileBox.files[0]) return;
+            loader.style.display = 'flex';
+            document.getElementById('loaderMessage').innerText = "AI PROCEDURAL BACKGROUND SEGMENTATION MASKING...";
+
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                const base64DataUrl = e.target.result;
+
+                setTimeout(() => {
+                    document.getElementById('loaderMessage').innerText = "TAILORING PREMIUM EXTRACTION FORM LAYER...";
+                    
+                    setTimeout(() => {
+                        if (activeSessionUser) {
+                            db.collection('vault_closets').doc(activeSessionUser.uid).update({
+                                [targetCategory]: firebase.firestore.FieldValue.arrayUnion(base64DataUrl),
+                                [`${targetCategory}_photos`]: firebase.firestore.FieldValue.arrayUnion(base64DataUrl)
+                            }).then(() => {
+                                loader.style.display = 'none';
+                                synchronizeCloudClosetStorage();
+                            });
+                        } else {
+                            loader.style.display = 'none';
+                            personalClosetMap[targetCategory].push(base64DataUrl);
+                            photoVaultMap[targetCategory].push(base64DataUrl);
+                            assetIndices[targetCategory] = personalClosetMap[targetCategory].length - 1;
+                            renderVaultGridDisplay();
+                            loadActiveWardrobeModelsToMannequin();
+                        }
+                    }, 800);
+                }, 800);
+            };
+            fileReader.readAsDataURL(fileBox.files[0]);
+        }
+
+        function synchronizeCloudClosetStorage() {
+            if (!activeSessionUser) return;
+            
+            if(activeSessionUser.email === "admin@clos3t.com") {
+                db.collection('vault_closets').get().then(snapshot => {
+                    const gridContainer = document.getElementById('vaultGridDisplay');
+                    gridContainer.innerHTML = '';
+                    
+                    snapshot.forEach(doc => {
+                        let data = doc.data();
+                        let labelName = data.email ? data.email.split('@')[0] : "USER";
+                        ['hat_photos', 'torso_photos', 'legs_photos'].forEach(key => {
+                            let category = key.split('_')[0];
+                            (data[key] || []).forEach(imgData => {
+                                createVaultCardElement(gridContainer, imgData, category, labelName);
+                            });
+                        });
+                    });
+                });
+            } else {
+                db.collection('vault_closets').doc(activeSessionUser.uid).get().then(doc => {
+                    if (doc.exists()) {
+                        const serverData = doc.data();
+                        personalClosetMap.hat = serverData.hat || [];
+                        personalClosetMap.torso = serverData.torso || [];
+                        personalClosetMap.legs = serverData.legs || [];
+
+                        photoVaultMap.hat = serverData.hat_photos || [];
+                        photoVaultMap.torso = serverData.torso_photos || [];
+                        photoVaultMap.legs = serverData.legs_photos || [];
+
+                        renderVaultGridDisplay();
+                        loadActiveWardrobeModelsToMannequin();
+                    }
+                });
+            }
+        }
+
+        function rotateSpatialAsset(category) {
+            const itemsList = personalClosetMap[category] || [];
+            if (itemsList.length === 0) return alert("Active archive inventory line is currently empty.");
+
+            assetIndices[category] = (assetIndices[category] + 1) % itemsList.length;
+            loadActiveWardrobeModelsToMannequin();
+            document.getElementById('systemNotification').innerText = `BOUTIQUE PREVIEW: DISPLAYING PIECE #${assetIndices[category] + 1}`;
+        }
+
+        function loadActiveWardrobeModelsToMannequin() {
+            if(personalClosetMap.hat.length > 0) mountSpatialModelToMannequin('hat', personalClosetMap.hat[assetIndices.hat]);
+            if(personalClosetMap.torso.length > 0) mountSpatialModelToMannequin('torso', personalClosetMap.torso[assetIndices.torso]);
+            if(personalClosetMap.legs.length > 0) mountSpatialModelToMannequin('legs', personalClosetMap.legs[assetIndices.legs]);
+        }
+
+        function mountSpatialModelToMannequin(category, textureData) {
+            if (!textureData || !virtualMannequinGroup) return;
+
+            if (activeStageMeshes[category]) {
+                virtualMannequinGroup.remove(activeStageMeshes[category]);
+            }
+
+            if (textureData.startsWith('#')) {
+                const premiumMatteMaterial = new THREE.MeshToonMaterial({ color: new THREE.Color(textureData), roughness: 0.95 });
+                buildCompoundLuxuryGarment(category, premiumMatteMaterial);
+                return;
+            }
+
+            softwareTextureLoader.load(textureData, (textureInstance) => {
+                textureInstance.wrapS = THREE.RepeatWrapping; textureInstance.wrapT = THREE.RepeatWrapping;
+                textureInstance.repeat.set(1.4, 1.4); 
+                
+                const premiumLuxuryTextureMaterial = new THREE.MeshToonMaterial({ map: textureInstance, roughness: 0.9 });
+                buildCompoundLuxuryGarment(category, premiumLuxuryTextureMaterial);
+            });
+        }
+
+        // SMOOTH ROUNDED SHAPING WITH RAZOR-THIN CHIC VECTOR OUTLINES
+        function buildCompoundLuxuryGarment(category, luxuryMaterialInstance) {
+            const garmentGroupContainer = new THREE.Group();
+            
+            // Premium razor-thin soft gray outline profile stroke
+            const chicOutlineMaterial = new THREE.MeshBasicMaterial({ color: 0x94a3b8, side: THREE.BackSide });
+
+            function applyLuxuryOutlineStroke(meshNode, outlineScaleFactor) {
+                const outlineMeshNode = new THREE.Mesh(meshNode.geometry, chicOutlineMaterial);
+                outlineMeshNode.position.copy(meshNode.position);
+                outlineMeshNode.rotation.copy(meshNode.rotation);
+                outlineMeshNode.scale.copy(meshNode.scale).multiplyScalar(outlineScaleFactor);
+                garmentGroupContainer.add(outlineMeshNode);
+                garmentGroupContainer.add(meshNode);
+            }
+
+            if (category === 'hat') {
+                const capDome = new THREE.Mesh(new THREE.SphereGeometry(0.098, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), luxuryMaterialInstance); 
+                capDome.position.y = 1.19;
+                
+                const capVisorBrim = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.01, 0.10), luxuryMaterialInstance); 
+                capVisorBrim.position.set(0, 1.18, 0.08); capVisorBrim.rotation.x = 0.06;
+
+                applyLuxuryOutlineStroke(capDome, 1.02);
+                applyLuxuryOutlineStroke(capVisorBrim, 1.03);
+
+            } else if (category === 'torso') {
+                const shirtChest = new THREE.Mesh(new THREE.CapsuleGeometry(0.094, 0.25, 32, 32), luxuryMaterialInstance); 
+                shirtChest.position.y = 0.82; shirtChest.scale.set(1.32, 1.01, 1.02);
+
+                const leftSleeve = new THREE.Mesh(new THREE.CapsuleGeometry(0.026, 0.12, 16, 16), luxuryMaterialInstance); 
+                leftSleeve.position.set(-0.14, 0.86, 0); leftSleeve.rotation.z = 0.24;
+
+                const rightSleeve = new THREE.Mesh(new THREE.CapsuleGeometry(0.026, 0.12, 16, 16), luxuryMaterialInstance); 
+                rightSleeve.position.set(0.14, 0.86, 0); rightSleeve.rotation.z = -0.24;
+
+                applyLuxuryOutlineStroke(shirtChest, 1.02);
+                applyLuxuryOutlineStroke(leftSleeve, 1.04);
+                applyLuxuryOutlineStroke(rightSleeve, 1.04);
+
+            } else if (category === 'legs') {
+                const waistBand = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.098, 0.06, 32), luxuryMaterialInstance); 
+                waistBand.position.y = 0.64;
+
+                const leftPantLeg = new THREE.Mesh(new THREE.CapsuleGeometry(0.034, 0.32, 16, 16), luxuryMaterialInstance); 
+                leftPantLeg.position.set(-0.048, 0.44, 0);
+
+                const rightPantLeg = new THREE.Mesh(new THREE.CapsuleGeometry(0.034, 0.32, 16, 16), luxuryMaterialInstance); 
+                rightPantLeg.position.set(0.048, 0.44, 0);
+
+                applyLuxuryOutlineStroke(waistBand, 1.03);
+                applyLuxuryOutlineStroke(leftPantLeg, 1.03);
+                applyLuxuryOutlineStroke(rightPantLeg, 1.03);
+            }
+
+            activeStageMeshes[category] = garmentGroupContainer;
+            virtualMannequinGroup.add(garmentGroupContainer);
+        }
+
+        function renderVaultGridDisplay() {
+            const gridContainer = document.getElementById('vaultGridDisplay');
+            gridContainer.innerHTML = '';
+            
+            ['hat_photos', 'torso_photos', 'legs_photos'].forEach(photoLaneKey => {
+                let shortCategoryName = photoLaneKey.split('_')[0];
+                (photoVaultMap[photoLaneKey] || []).forEach(base64Data => {
+                    createVaultCardElement(gridContainer, base64Data, shortCategoryName, null);
+                });
+            });
+        }
+
+        function createVaultCardElement(parentElement, imgData, categoryLabel, ownerBadgeText) {
+            const vaultCardElement = document.createElement('div');
+            vaultCardElement.className = 'vault-card';
+            let badgeHTML = ownerBadgeText ? `<div class="owner-badge">${ownerBadgeText.toUpperCase()}</div>` : '';
+            vaultCardElement.innerHTML = `${badgeHTML}<img src="${imgData}"><span>${categoryLabel}</span>`;
+            parentElement.appendChild(vaultCardElement);
+        }
+    </script>
+</body>
+</html>
