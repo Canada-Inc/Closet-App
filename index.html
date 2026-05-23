@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CLOS3T - Local Studio Engine</title>
+    
+    <!-- PWA Mobile Configuration Capabilities -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Studio Closet">
+
+    <!-- Production Core Engine Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
+
+    <style>
+        /* INDUSTRIAL STUDIO DESIGN FRAMEWORK */
+        :root {
+            --bg-bright: #f4f5f7;
+            --bg-panel: #ffffff;
+            --accent-cher: #ffe600;
+            --clueless-pink: #ffb6c1;
+            --text-dark: #111111;
+            --border-thick: 3px solid #111111;
+            --retro-shadow: 5px 5px 0px #111111;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-bright);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            height: 100vh;
+        }
+
+        /* ADMINISTRATIVE LOCK SCREEN */
+        .auth-gatekeeper {
+            position: fixed;
+            inset: 0;
+            background: var(--accent-cher);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .studio-card {
+            background: var(--bg-panel);
+            border: var(--border-thick);
+            padding: 30px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: var(--retro-shadow);
+            text-align: center;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            background: #ffffff;
+            border: var(--border-thick);
+            color: var(--text-dark);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        .primary-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--clueless-pink);
+            color: var(--text-dark);
+            border: var(--border-thick);
+            font-size: 1rem;
+            font-weight: 900;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px #111111;
+            margin-bottom: 8px;
+        }
+
+        .primary-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #111111;
+        }
+
+        .workspace-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+            overflow-y: scroll;
+            padding-bottom: 60px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .studio-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border: var(--border-thick);
+            background: var(--accent-cher);
+            box-shadow: var(--retro-shadow);
+        }
+
+        /* INTERACTIVE 3D PLATFORM DISPLAY PANE */
+        .viewport-panel {
+            background: #ffffff;
+            border: var(--border-thick);
+            box-shadow: var(--retro-shadow);
+            position: relative;
+            height: 380px;
+            overflow: hidden;
+            touch-action: none; 
+        }
+
+        #canvas3dContainer { width: 100%; height: 100%; cursor: grab; }
+        #canvas3dContainer:active { cursor: grabbing; }
+
+        .control-panel {
+            background: var(--bg-panel);
+            border: var(--border-thick);
+            padding: 15px;
+            box-shadow: var(--retro-shadow);
+        }
+
+        .dock-row { display: flex; gap: 8px; margin-top: 12px; }
+
+        .uploader-zone label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 14px;
+            background: #ffffff;
+            border: 3px dashed #111111;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 0.85rem;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .uploader-zone input[type="file"] { display: none; }
+
+        .selector-chip {
+            flex: 1;
+            padding: 12px 6px;
+            background: #ffffff;
+            border: var(--border-thick);
+            color: var(--text-dark);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px #111111;
+        }
+
+        .system-ticker-box {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            border: var(--border-thick);
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 900;
+            box-shadow: 3px 3px 0px #111111;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        /* PHOTO WARDROBE VAULT STORAGE VIEWER */
+        .vault-panel {
+            background: var(--bg-panel);
+            border: var(--border-thick);
+            padding: 15px;
+            box-shadow: var(--retro-shadow);
+            margin-bottom: 20px;
+        }
+
+        .vault-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .vault-card {
+            border: 2px solid #111111;
+            background: #f4f5f7;
+            padding: 4px;
+            text-align: center;
+            position: relative;
+        }
+
+        .vault-card img {
+            width: 100%;
+            height: 75px;
+            object-fit: cover;
+            border: 1px solid #111111;
+        }
+
+        .vault-card span {
+            font-size: 0.6rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .owner-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--accent-cher);
+            border: 1px solid #000;
+            font-size: 0.5rem;
+            font-weight: 900;
+            padding: 1px 3px;
+        }
+
+        .loader-spinner {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            font-size: 0.85rem;
+        }
+
+        .pulse-ring {
+            width: 30px; height: 30px;
+            border: 4px solid var(--bg-bright);
+            border-top-color: var(--clueless-pink);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-bottom: 8px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- RETRO APPLICATION ACCOUNT SELECTION GATE -->
+    <div id="authOverlay" class="auth-gatekeeper">
+        <div class="studio-card">
+            <h2 style="margin-top:0; font-size:1.6rem; font-weight:900; letter-spacing: -1px;">SELECT USER CONSOLE</h2>
+            <p style="font-size: 0.8rem; font-weight: bold; margin-bottom: 20px; color: #555;">Bypassing Remote Servers Authentication</p>
+            
+            <button onclick="selectLocalUser('Hunter')" class="primary-btn">Hunter's Workspace</button>
+            <button onclick="selectLocalUser('Girlfriend')" class="primary-btn" style="background:#d8bfd8;">Girlfriend's Workspace</button>
+            <button onclick="selectLocalUser('Admin')" class="primary-btn" style="background:var(--accent-cher);">Master Admin Panel</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP FLOW LAYOUT VIEWPORTS -->
+    <div class="workspace-shell">
+        <nav class="studio-navbar">
+            <span style="font-weight:900; font-size:1.1rem;" id="studioTitle">STUDIO_DECK</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span id="userGreeting" style="font-weight:900; font-size:0.8rem; text-transform: uppercase; background:#fff; border:2px solid #000; padding:2px 6px;">USER: GUEST</span>
+                <span onclick="switchUserSession()" style="cursor:pointer; font-size:0.75rem; color:#ef4444; font-weight:900; border:2px solid #000; padding:2px 5px; background:#fff;">Switch</span>
+            </div>
+        </nav>
+
+        <!-- 3D WORKSPACE PANE CANVAS VIEWPORT -->
+        <div class="viewport-panel">
+            <div id="systemNotification" class="system-ticker-box">SWIPE OR DRAG TO ROTATE MODEL</div>
+            <div id="canvas3dContainer"></div>
+            
+            <div id="uiLoader" class="loader-spinner">
+                <div class="pulse-ring"></div>
+                <span>CONVERTING FABRIC VECTOR DATA...</span>
+            </div>
+        </div>
+
+        <!-- CAMERA IMAGE INTAKE DECK MECHANICS -->
+        <div class="control-panel" id="uploadConsoleControl">
+            <div class="uploader-zone">
+                <label for="imageInput">✦ CAPTURE GARMENT FROM PHONE CAMERA ✦</label>
+                <input type="file" id="imageInput" accept="image/*" onchange="processGarmentIngestion()">
+            </div>
+            
+            <div class="dock-row">
+                <select id="itemCategory" class="input-field" style="margin:0; width:45%; height:46px; border:var(--border-thick);">
+                    <option value="hat">Headwear</option>
+                    <option value="torso">Upper Layer</option>
+                    <option value="legs">Bottoms</option>
+                </select>
+                <button class="selector-chip" onclick="rotateSpatialAsset('hat')">Hat ↻</button>
+                <button class="selector-chip" onclick="rotateSpatialAsset('torso')">Top ↻</button>
+                <button class="selector-chip" onclick="rotateSpatialAsset('legs')">Legs ↻</button>
+            </div>
+        </div>
+
+        <!-- VISUAL REPOSITORY IMAGE VAULT -->
+        <div class="vault-panel">
+            <h3 style="margin:0; font-size:0.9rem; font-weight:900;" id="vaultTitle">📸 PERSONAL CLOSET ARCHIVE VAULT</h3>
+            <div class="vault-grid" id="vaultGridDisplay"></div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTROLLER CORE SCRIPTS ENGINE -->
+    <script>
+        let currentUserRole = "Guest";
+        
+        let databaseMatrix = {
+            Hunter: { hat: [], torso: [], legs: [], hat_photos: [], torso_photos: [], legs_photos: [] },
+            Girlfriend: { hat: [], torso: [], legs: [], hat_photos: [], torso_photos: [], legs_photos: [] }
+        };
+
+        if(localStorage.getItem("closet_db_matrix")) {
+            databaseMatrix = JSON.parse(localStorage.getItem("closet_db_matrix"));
+        }
+
+        let assetIndices = { hat: 0, torso: 0, legs: 0 };
+        let sceneContext, lensCamera, canvasRenderer, virtualMannequinGroup;
+        let activeStageMeshes = { hat: null, torso: null, legs: null };
+
+        let isDraggingInputPointer = false;
+        let previousPointerPositionX = 0;
+
+        function selectLocalUser(userRole) {
+            currentUserRole = userRole;
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('userGreeting').innerText = `USER: ${userRole}`;
+            
+            if(userRole === "Admin") {
+                document.getElementById('studioTitle').innerText = "ADMIN_CONSOLE_DECK";
+                document.getElementById('vaultTitle').innerText = "📸 MASTER DATA POOL VAULT (ALL UPLOADS)";
+                document.getElementById('uploadConsoleControl').style.opacity = "0.5"; 
+                document.getElementById('uploadConsoleControl').style.pointerEvents = "none"; // Hard lock uploads in admin panel
+            } else {
+                document.getElementById('studioTitle').innerText = "STUDIO_DECK";
+                document.getElementById('vaultTitle').innerText = "📸 PERSONAL CLOSET ARCHIVE VAULT";
+                document.getElementById('uploadConsoleControl').style.opacity = "1";
+                document.getElementById('uploadConsoleControl').style.pointerEvents = "auto";
+            }
+
+            initSpatial3DEngine();
+            renderVaultGridDisplay();
+            loadActiveWardrobeModelsToMannequin();
+        }
+
+        function switchUserSession() {
+            window.location.reload();
+        }
+
+        // ========================================================
+        // 2. NO-SPIN SPATIAL ENGINE ENGINE SETUP (THREE.JS RUNTIME)
+        // ========================================================
+        function initSpatial3DEngine() {
+            const viewport = document.getElementById('canvas3dContainer');
+            if (sceneContext) return;
+
+            sceneContext = new THREE.Scene();
+            sceneContext.background = new THREE.Color(0xffffff);
+
+            lensCamera = new THREE.PerspectiveCamera(45, viewport.clientWidth / viewport.clientHeight, 0.1, 100);
+            lensCamera.position.set(0, 1.1, 2.3);
+
+            canvasRenderer = new THREE.WebGLRenderer({ antialias: true });
+            canvasRenderer.setSize(viewport.clientWidth, viewport.clientHeight);
+            canvasRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            viewport.appendChild(canvasRenderer.domElement);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+            sceneContext.add(ambient);
+
+            const studioLight = new THREE.DirectionalLight(0xffffff, 0.4);
+            studioLight.position.set(1, 3, 2);
+            sceneContext.add(studioLight);
+
+            virtualMannequinGroup = new THREE.Group();
+            const mannequinMaterial = new THREE.MeshStandardMaterial({ color: 0x222225, roughness: 0.5 });
+
+            const bodyColumn = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.10, 0.65, 32), mannequinMaterial);
+            bodyColumn.position.y = 0.85;
+            const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.10, 32, 32), mannequinMaterial);
+            headSphere.position.y = 1.30;
+
+            virtualMannequinGroup.add(bodyColumn);
+            virtualMannequinGroup.add(headSphere);
+            sceneContext.add(virtualMannequinGroup);
+
+            // RUNTIME TICK: Strictly renders frame updates without adding automated rotation forces
+            function renderTick() {
+                requestAnimationFrame(renderTick);
+                canvasRenderer.render(sceneContext, lensCamera);
+            }
+            renderTick();
+
+            // ========================================================
+            // STABLE INTERACTIVE DRAG-TO-ROTATE ENGINE LOOP
+            // ========================================================
+            viewport.addEventListener('mousedown', (e) => { 
+                isDraggingInputPointer = true; 
+                previousPointerPositionX = e.clientX; 
+            });
+            viewport.addEventListener('touchstart', (e) => { 
+                isDraggingInputPointer = true; 
+                previousPointerPositionX = e.touches[0].clientX; 
+            }, {passive: true});
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDraggingInputPointer || !virtualMannequinGroup) return;
+                let deltaX = e.clientX - previousPointerPositionX;
+                virtualMannequinGroup.rotation.y += deltaX * 0.01; 
+                previousPointerPositionX = e.clientX;
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isDraggingInputPointer || !virtualMannequinGroup) return;
+                let deltaX = e.touches[0].clientX - previousPointerPositionX;
+                virtualMannequinGroup.rotation.y += deltaX * 0.01;
+                previousPointerPositionX = e.touches[0].clientX;
+            }, {passive: true});
+
+            window.addEventListener('mouseup', () => isDraggingInputPointer = false);
+            window.addEventListener('touchend', () => isDraggingInputPointer = false);
+
+            window.addEventListener('resize', () => {
+                lensCamera.aspect = viewport.clientWidth / viewport.clientHeight;
+                lensCamera.updateProjectionMatrix();
+                canvasRenderer.setSize(viewport.clientWidth, viewport.clientHeight);
+            });
+        }
+
+        // ========================================================
+        // 3. SECURE LOCAL STORAGE INGESTION DATA PIPELINES
+        // ========================================================
+        function processGarmentIngestion() {
+            if(currentUserRole === "Admin") return;
+            
+            const fileBox = document.getElementById('imageInput');
+            const targetCategory = document.getElementById('itemCategory').value;
+            const loader = document.getElementById('uiLoader');
+            
+            if (!fileBox.files[0]) return;
+            loader.style.display = 'flex';
+
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                const base64PhotoDataUrl = e.target.result;
+                
+                let modelMeshPathUrl = "https://vazgriz.github.io/three-custom-shader-material/examples/models/suzanne.gltf";
+                if(targetCategory === 'torso') modelMeshPathUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF/Box.gltf";
+                if(targetCategory === 'legs') modelMeshPathUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoomBox/glTF/BoomBox.gltf";
+
+                databaseMatrix[currentUserRole][targetCategory].push(modelMeshPathUrl);
+                databaseMatrix[currentUserRole][`${targetCategory}_photos`].push(base64PhotoDataUrl);
+
+                localStorage.setItem("closet_db_matrix", JSON.stringify(databaseMatrix));
+
+                loader.style.display = 'none';
+                assetIndices[targetCategory] = databaseMatrix[currentUserRole][targetCategory].length - 1;
+                
+                renderVaultGridDisplay();
+                mountSpatialModelToMannequin(targetCategory, modelMeshPathUrl);
+            };
+            fileReader.readAsDataURL(fileBox.files[0]);
+        }
+
+        function loadActiveWardrobeModelsToMannequin() {
+            let activePoolSource = currentUserRole === "Admin" ? "Hunter" : currentUserRole;
+
+            const hatPool = databaseMatrix[activePoolSource]?.hat || [];
+            const torsoPool = databaseMatrix[activePoolSource]?.torso || [];
+            const legsPool = databaseMatrix[activePoolSource]?.legs || [];
+
+            if(hatPool.length > 0) mountSpatialModelToMannequin('hat', hatPool[assetIndices.hat]);
+            if(torsoPool.length > 0) mountSpatialModelToMannequin('torso', torsoPool[assetIndices.torso]);
+            if(legsPool.length > 0) mountSpatialModelToMannequin('legs', legsPool[assetIndices.legs]);
+        }
+
+        function rotateSpatialAsset(category) {
+            let targetUserSpace = currentUserRole === "Admin" ? "Hunter" : currentUserRole;
+            const itemsList = databaseMatrix[targetUserSpace][category] || [];
+            if (itemsList.length === 0) return alert("This clothing category storage lane is currently empty.");
+
+            assetIndices[category] = (assetIndices[category] + 1) % itemsList.length;
+            mountSpatialModelToMannequin(category, itemsList[assetIndices[category]]);
+            document.getElementById('systemNotification').innerText = `VIEWING SELECTION #${assetIndices[category] + 1}`;
+        }
+
+        function mountSpatialModelToMannequin(category, modelSourceUrl) {
+            if (!modelSourceUrl) return;
+
+            if (activeStageMeshes[category]) {
+                virtualMannequinGroup.remove(activeStageMeshes[category]);
+            }
+
+            const modelLoader = new THREE.GLTFLoader();
+            modelLoader.load(modelSourceUrl, (gltf) => {
+                const compositeMesh = gltf.scene;
+                
+                compositeMesh.scale.set(0.35, 0.35, 0.35);
+                if (category === 'hat') compositeMesh.position.set(0, 1.25, 0);
+                if (category === 'torso') compositeMesh.position.set(0, 0.85, 0);
+                if (category === 'legs') compositeMesh.position.set(0, 0.35, 0);
+
+                activeStageMeshes[category] = compositeMesh;
+                virtualMannequinGroup.add(compositeMesh);
+            });
+        }
+
+        function renderVaultGridDisplay() {
+            const gridContainer = document.getElementById('vaultGridDisplay');
+            gridContainer.innerHTML = '';
+
+            if (currentUserRole === "Admin") {
+                // MASTER ADMIN VIEW: Pools data parameters across all user nodes to show everything at once
+                for (let accountKey in databaseMatrix) {
+                    let userProfile = databaseMatrix[accountKey];
+                    ['hat_photos', 'torso_photos', 'legs_photos'].forEach(photoLaneKey => {
+                        let shortCategoryName = photoLaneKey.split('_')[0];
+                        userProfile[photoLaneKey].forEach(base64Data => {
+                            createVaultCardElement(gridContainer, base64Data, shortCategoryName, accountKey);
+                        });
+                    });
+                }
+            } else {
+                // SEPARATED VIEW: Renders items specifically owned by the active user session
+                let targetProfile = databaseMatrix[currentUserRole];
+                ['hat_photos', 'torso_photos', 'legs_photos'].forEach(photoLaneKey => {
+                    let shortCategoryName = photoLaneKey.split('_')[0];
+                    targetProfile[photoLaneKey].forEach(base64Data => {
+                        createVaultCardElement(gridContainer, base64Data, shortCategoryName, null);
+                    });
+                });
+            }
+        }
+
+        function createVaultCardElement(parentElement, imgData, categoryLabel, ownerBadgeText) {
+            const vaultCardElement = document.createElement('div');
+            vaultCardElement.className = 'vault-card';
+            
+            let badgeHTML = '';
+            if(ownerBadgeText) {
+                badgeHTML = `<div class="owner-badge">${ownerBadgeText.toUpperCase()}</div>`;
+            }
+
+            vaultCardElement.innerHTML = `
+                ${badgeHTML}
+                <img src="${imgData}">
+                <span>${categoryLabel}</span>
+            `;
+            parentElement.appendChild(vaultCardElement);
+        }
+    </script>
+</body>
+</html>
